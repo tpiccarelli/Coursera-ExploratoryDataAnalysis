@@ -1,0 +1,27 @@
+### Add PNG files in GitHub account using Git Bash
+
+# Create a local repo:
+$ mkdir ~/Coursera-ExploratoryDataAnalysis
+
+# Copy desired PNG files to this directory
+
+# Change to this directory:
+$ cd ~/Coursera-ExploratoryDataAnalysis
+
+# Initialize in this directory:
+$ git init
+
+# Add and update PNG files:
+$ git add -A
+
+# Commit changes saving them to an intermediate version:
+$ git commit -m 'add PNG files'
+
+# Point the local repo at the remote repo stored in GitHub:
+$ git remote add origin https://github.com/tpiccarelli/Coursera-ExploratoryDataAnalysis
+
+# Pull remote GitHub repo content to the local repo:
+$ git pull origin master
+
+# Push local repo content to the remote GitHub repo:
+$ git push origin master
