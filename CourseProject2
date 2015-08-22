@@ -1,0 +1,188 @@
+# COURSERA - EXPLORATORY DATA ANALYSIS
+# COURSE PROJECT 2
+
+# Download data:
+download.file(url = "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip", destfile = "exdata_data_NEI_data.zip", quiet = T)
+
+# Unzip file:
+unzip(zipfile = "exdata_data_NEI_data.zip")
+
+# Delete .zip file:
+file.remove("exdata_data_NEI_data.zip")
+
+# Read data:
+SCC <- readRDS(file = "Source_Classification_Code.rds")
+NEI <- readRDS(file = "summarySCC_PM25.rds")
+
+# QUESTION 1: "Have total emissions from PM2.5 decreased in the United States from 1999 to 2008?"
+    # Load dplyr package:
+    require(dplyr)
+    # Group total NEI emissions per year:
+    q1 <- summarise(group_by(NEI, year), sum(Emissions))
+    # Plot a line graphic showing emissions per year:
+    png(filename = "F:/R/Exploratory Data Analysis/Course Project 2/question1.png", width = 480, height = 480, units = "px")
+    plot(x = q1$year, 
+         y = q1$`sum(Emissions)`, 
+         type = "l", 
+         col = "red", 
+         xlab = "Years", 
+         ylab = "PM2.5 emissions (tons)", 
+         main = "Total PM2.5 emissions in USA (1999-2008)")
+    dev.off()
+# ANSWER: Yes, they have.
+
+# QUESTION 2: "Have total emissions from PM2.5 decreased in the Baltimore City, Maryland (fips == "24510") from 1999 to 2008?"
+    # Load dplyr package:
+    require(dplyr)
+    # Filter NEI by Baltimore City's fips:
+    q2 <- filter(NEI, fips == "24510")
+    # Group total NEI emissions per year:
+    q2 <- summarise(group_by(q2,year), sum(Emissions))
+    # Plot a line graphic showing emissions per year:
+    png(filename = "F:/R/Exploratory Data Analysis/Course Project 2/question2.png", width = 480, height = 480, units = "px")
+    plot(x = q2$year, 
+         y = q2$`sum(Emissions)`, 
+         type = "l", 
+         col = "blue", 
+         xlab = "Years", 
+         ylab = "PM2.5 emissions (tons)", 
+         main = "Total PM2.5 emissions in Baltimore City-MD (1999-2008)")
+    dev.off()
+# ANSWER: Yes, they have, but there was an increasing from 2002 to 2005.
+
+# QUESTION 3: "Which of these four sources have seen decreases in emissions from 1999-2008 for Baltimore City? Which have seen increases in emissions from 1999-2008?"
+    # Load dplyr and ggplot2 packages:
+    require(dplyr)
+    require(ggplot2)
+    # Filter NEI by Baltimore City fips:
+    q3 <- filter(NEI, fips == "24510")
+    # Group total NEI emissions per year and per type:
+    q3 <- summarise(group_by(q3,year, type),sum(Emissions))
+    # Filter total NEI emissions per type:
+        # NON-ROAD:
+        q3_t1 <- filter(q3, type=="NON-ROAD")
+        q3_t1 <- select(q3_t1, year, `sum(Emissions)`)
+        # NONPOINT:
+        q3_t2 <- filter(q3, type=="NONPOINT")
+        q3_t2 <- select(q3_t2, year, `sum(Emissions)`)
+        # ON-ROAD:
+        q3_t3 <- filter(q3, type=="ON-ROAD")
+        q3_t3 <- select(q3_t3, year, `sum(Emissions)`)
+        # POINT:
+        q3_t4 <- filter(q3, type=="POINT")
+        q3_t4 <- select(q3_t4, year, `sum(Emissions)`)
+    # Plot quick graphs for each type using ggplot2:
+        png(filename = "F:/R/Exploratory Data Analysis/Course Project 2/question3.png", width = 1540, height = 480, units = "px")
+        # NON-ROAD:
+        plot1 <- qplot(x = year, 
+              y = `sum(Emissions)`,
+              data = q3_t1,
+              geom = "line",
+              main = "NON-ROAD PM2.5 emissions in Baltimore City")
+        # Answer: DECREASE
+        
+        # NONPOINT:
+        plot2 <- qplot(x = year, 
+              y = `sum(Emissions)`, 
+              data = q3_t2, 
+              geom = "line",
+              main = "NONPOINT PM2.5 emissions in Baltimore City")
+        # Answer: DECREASE
+        
+        # ON-ROAD:
+        plot3 <- qplot(x = year, 
+              y = `sum(Emissions)`, 
+              data = q3_t3, 
+              geom = "line",
+              main = "ON-ROAD PM2.5 emissions in Baltimore City")
+        # Answer: DECREASE
+        
+        # POINT:
+        plot4 <- qplot(x = year, 
+              y = `sum(Emissions)`, 
+              data = q3_t4, 
+              geom = "line",
+              main = "POINT PM2.5 emissions in Baltimore City")
+        # Install and require gridExtra package, in order to put these graphics side by side:
+        install.packages("gridExtra")
+        require(gridExtra)
+        grid.arrange(plot1,plot2,plot3,plot4, ncol=4)
+        dev.off()
+        # Answer: INCREASE UNTIL 2005, THEN DECREASE IN 2008, BUT AT A HIGHER LEVEL THAN 1999
+
+# QUESTION 4: "Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008?"
+        # Filter "coal" entries from SCC data frame:
+        coal <- SCC[grep("Coal", SCC$Short.Name),]
+        # Set SQL instruction joining [coal.SCC] and [NEI.SCC]:
+        require(sqldf)
+        coal_emissions <- sqldf("SELECT NEI.Emissions, NEI.year FROM coal INNER JOIN NEI ON coal.SCC=NEI.SCC")
+        # Group total coal emissions per year:
+        require(dplyr)
+        q4 <- summarise(group_by(coal_emissions, year), sum(Emissions))
+        # Plot a line graphic showing coal emissions per year:
+        png(filename = "F:/R/Exploratory Data Analysis/Course Project 2/question4.png", width = 480, height = 480, units = "px")
+        plot(x = q4$year,
+             y = q4$`sum(Emissions)`,
+             type = "l",
+             col = "dark green",
+             xlab = "Years",
+             ylab = "PM2.5 coal emissions (tons)",
+             main = "Total PM2.5 coal emissions in USA (1999-2008)")
+        dev.off()
+# ANSWER: They have decreased from 1999 to 2008, despite there was a slight increase from 2002 to 2005.
+
+# QUESTION 5: "How have emissions from motor vehicle sources changed from 1999-2008 in Baltimore City?"
+    # Filter "mobile" entries from SCC data frame:
+    mobile <- SCC[grep("Mobile", SCC$EI.Sector),]
+    # Filter NEI by Baltimore City's fips:
+    require(dplyr)
+    Balt <- filter(NEI, fips == "24510")
+    # Set SQL instruction joining [mobile.SCC] and [Balt.SCC]:
+    require(sqldf)
+    mobile_Balt_emissions <- sqldf("SELECT Balt.Emissions, Balt.year FROM mobile INNER JOIN Balt ON mobile.SCC=Balt.SCC")
+    # Group total motor vehicle emissions in Baltimore City per year:
+    q5 <- summarise(group_by(mobile_Balt_emissions, year), sum(Emissions))
+    # Plot a line graphic showing motor vehicle emissions in Baltimore City per year:
+    png(filename = "F:/R/Exploratory Data Analysis/Course Project 2/question5.png", width = 480, height = 480, units = "px")
+    plot(x = q5$year,
+         y = q5$`sum(Emissions)`,
+         type = "l",
+         col = "dark orange",
+         xlab = "Years",
+         ylab = "PM2.5 motor vehicle emissions (tons)",
+         main = "Total PM2.5 motor vehicle emissions in Baltimore City-MD (1999-2008)")
+# ANSWER: They have decreased from 1999 to 2008, despite there was a slight increase from 2002 to 2005 and increased from 2005 to 2008.
+
+# QUESTION 6: "Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?"
+    # Filter "mobile" entries from SCC data frame:
+    mobile <- SCC[grep("Mobile", SCC$EI.Sector),]
+    # Filter NEI by Baltimore City's fips:
+    require(dplyr)
+    Balt <- filter(NEI, fips == "24510")
+    # Set SQL instruction joining [mobile.SCC] and [Balt.SCC]:
+    require(sqldf)
+    mobile_Balt_emissions <- sqldf("SELECT Balt.Emissions, Balt.year FROM mobile INNER JOIN Balt ON mobile.SCC=Balt.SCC")
+    # Group total motor vehicle emissions in Baltimore City per year:
+    q5 <- summarise(group_by(mobile_Balt_emissions, year), sum(Emissions))
+    
+    # Filter NEI by LA fips:
+    require(dplyr)
+    LA <- filter(NEI, fips == "06037")
+    # Set SQL instruction joining [mobile.SCC] and [LA.SCC]:
+    require(sqldf)
+    mobile_LA_emissions <- sqldf("SELECT LA.Emissions, LA.year FROM mobile INNER JOIN LA ON mobile.SCC=LA.SCC")
+    # Group total LA motor vehicle emissions per year:
+    q6 <- summarise(group_by(mobile_LA_emissions, year), sum(Emissions))
+    # Plot 2 line graphics in a panel showing motor vehicle emissions in LA and Baltimore City per year:
+    png(filename = "F:/R/Exploratory Data Analysis/Course Project 2/question6.png", width = 480, height = 480, units = "px")
+    par(mfrow= c(1,2))
+    plot(x = q6$year,
+         y = q6$`sum(Emissions)`,
+         type = "l",
+         col = "red")
+    plot(x = q5$year,
+         y = q5$`sum(Emissions)`,
+         type = "l",
+         col = "blue")
+    dev.off()
+    
