@@ -151,6 +151,7 @@ NEI <- readRDS(file = "summarySCC_PM25.rds")
          xlab = "Years",
          ylab = "PM2.5 motor vehicle emissions (tons)",
          main = "Total PM2.5 motor vehicle emissions in Baltimore City-MD (1999-2008)")
+    dev.off()
 # ANSWER: They have decreased from 1999 to 2008, despite there was a slight increase from 2002 to 2005 and increased from 2005 to 2008.
 
 # QUESTION 6: "Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?"
@@ -174,15 +175,21 @@ NEI <- readRDS(file = "summarySCC_PM25.rds")
     # Group total LA motor vehicle emissions per year:
     q6 <- summarise(group_by(mobile_LA_emissions, year), sum(Emissions))
     # Plot 2 line graphics in a panel showing motor vehicle emissions in LA and Baltimore City per year:
-    png(filename = "F:/R/Exploratory Data Analysis/Course Project 2/question6.png", width = 480, height = 480, units = "px")
+    png(filename = "F:/R/Exploratory Data Analysis/Course Project 2/question6.png", width = 960, height = 480, units = "px")
     par(mfrow= c(1,2))
     plot(x = q6$year,
          y = q6$`sum(Emissions)`,
          type = "l",
-         col = "red")
+         col = "red",
+         xlab = "Years",
+         ylab = "PM2.5 motor vehicle emissions (tons)",
+         main = "LA motor vehicles emissions")
     plot(x = q5$year,
          y = q5$`sum(Emissions)`,
          type = "l",
-         col = "blue")
+         col = "blue",
+         xlab = "Years",
+         ylab = "PM2.5 motor vehicle emissions (tons)",
+         main = "Baltimore motor vehicles emissions")
     dev.off()
-    
+# ANSWER: It have increased in LA and have decreased in Baltimore.
